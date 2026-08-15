@@ -3,6 +3,10 @@
     {
       "source": "/api/:path*",
       "destination": "https://shopnest-project-tdil.onrender.com/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
