@@ -1,43 +1,26 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-let transporter = null;
+let resendClient = null;
 
-const getTransporter = () => {
-  const user = process.env.EMAIL_USER || process.env.GMAIL_USER;
-  const pass = process.env.EMAIL_PASS || process.env.GMAIL_PASS;
-
-  if (!user || !pass) {
-    console.error(
-      "❌ EMAIL_USER or EMAIL_PASS is missing in environment variables.",
-    );
+const getResendClient = () => {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.error("❌ RESEND_API_KEY is missing in environment variables.");
     return null;
   }
 
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false, // Use STARTTLS on port 587
-      auth: {
-        user,
-        pass,
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
-      family: 4, // ⚠️ CRITICAL: Forces IPv4 to resolve ENETUNREACH on Render
-      connectionTimeout: 10000, // 10s timeout prevents hanging requests
-    });
+  if (!resendClient) {
+    resendClient = new Resend(apiKey);
   }
-  return transporter;
+  return resendClient;
 };
 
 /**
- * Sends an email using Nodemailer.
+ * Sends transactional email via Resend HTTPS API (Port 443 - zero block issues on cloud)
  * @param {Object} params
  * @param {string} params.email - Recipient email address
- * @param {string} params.subject - Email subject line
- * @param {string} params.message - HTML content of the message
+ * @param {string} [params.subject] - Email subject line
+ * @param {string} [params.message] - HTML content of the message
  * @param {string} [params.text] - Optional plain text alternative
  * @param {string|number} [params.otp] - Optional OTP code for fallback logging
  */
@@ -47,34 +30,32 @@ const sendEmail = async ({ email, subject, message, text, otp }) => {
     return;
   }
 
-  const user = process.env.EMAIL_USER || process.env.GMAIL_USER;
-  const activeTransporter = getTransporter();
+  const resend = getResendClient();
 
-  if (!activeTransporter) {
+  if (!resend) {
     if (otp) console.log(`👉 [FALLBACK OTP] for ${email}: ${otp}`);
     return;
   }
 
   try {
-    const mailOptions = {
-      from: `"ShopNest Support" <${user}>`,
+    const { data, error } = await resend.emails.send({
+      from: "ShopNest Support <onboarding@resend.dev>",
       to: email,
-      subject: subject || "ShopNest Verification",
-      html: message || (otp ? `<h2>Your OTP is: <b>${otp}</b></h2>` : ""),
-      text:
-        text ||
-        (message ? message.replace(/<[^>]*>?/gm, "") : `Your OTP is: ${otp}`),
-    };
+      subject: subject || "ShopNest Verification Code",
+      html: message || (otp ? `<h2>Your ShopNest OTP is: <b>${otp}</b></h2>` : "<p>Verification code enclosed.</p>"),
+      text: text || (otp ? `Your ShopNest OTP is: ${otp}` : message ? message.replace(/<[^>]*>?/gm, "") : ""),
+    });
 
-    console.log(`[Email Attempt] Sending message to ${email}...`);
-    const info = await activeTransporter.sendMail(mailOptions);
-    console.log(
-      `✅ Email successfully sent to ${email} (ID: ${info.messageId})`,
-    );
-    return info;
+    if (error) {
+      console.error(`❌ [Resend Error] Failed to send email to ${email}:`, error.message);
+      if (otp) console.log(`👉 [FALLBACK OTP] for ${email}: ${otp}`);
+      return;
+    }
+
+    console.log(`✅ Email successfully sent via Resend to ${email} (ID: ${data.id})`);
+    return data;
   } catch (error) {
-    console.error(`❌ Failed to send email to ${email}: ${error.message}`);
-    // Fallback: Always print OTP in Render logs so you are never locked out
+    console.error(`❌ [API Error] Failed to send email to ${email}:`, error.message);
     if (otp) console.log(`👉 [FALLBACK OTP] for ${email}: ${otp}`);
   }
 };
