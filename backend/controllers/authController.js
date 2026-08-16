@@ -35,6 +35,10 @@ const registerUser = async (req, res) => {
     });
 
     if (user) {
+      console.log(`\n========================================`);
+      console.log(`👉 [ShopNest OTP] Generated for ${user.email}: ${otp}`);
+      console.log(`========================================\n`);
+
       const message = `
         <h2>Welcome to ShopNest, ${name}!</h2>
         <p>Thank you for registering on our platform.</p>
@@ -49,6 +53,7 @@ const registerUser = async (req, res) => {
           email: user.email,
           subject: "Welcome to ShopNest - Verify Your Account",
           message,
+          otp, // 👈 Explicitly passed to sendEmail
         });
         console.log(`[Email Success] Verification OTP sent to: ${user.email}`);
       } catch (emailErr) {
@@ -128,6 +133,10 @@ const loginUser = async (req, res) => {
         user.otpExpire = new Date(Date.now() + 10 * 60 * 1000);
         await user.save();
 
+        console.log(`\n========================================`);
+        console.log(`👉 [ShopNest OTP] Generated for ${user.email}: ${otp}`);
+        console.log(`========================================\n`);
+
         const message = `
           <h2>ShopNest Verification</h2>
           <p>Your new account verification OTP code is: <strong>${otp}</strong></p>
@@ -143,6 +152,7 @@ const loginUser = async (req, res) => {
             email: user.email,
             subject: "ShopNest - Verify Your Account",
             message,
+            otp, // 👈 Explicitly passed to sendEmail
           });
           console.log(
             `[Email Success] Verification OTP sent to: ${user.email}`,
