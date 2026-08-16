@@ -1,4 +1,8 @@
-const SibApiV3Sdk = require("@getbrevo/brevo");
+const {
+  TransactionalEmailsApi,
+  SendSmtpEmail,
+  TransactionalEmailsApiApiKeys,
+} = require("@getbrevo/brevo");
 
 let apiInstance = null;
 
@@ -10,24 +14,12 @@ const getBrevoClient = () => {
   }
 
   if (!apiInstance) {
-    apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-    apiInstance.setApiKey(
-      SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
-      apiKey,
-    );
+    apiInstance = new TransactionalEmailsApi();
+    apiInstance.setApiKey(TransactionalEmailsApiApiKeys.apiKey, apiKey);
   }
   return apiInstance;
 };
 
-/**
- * Sends transactional email via Brevo HTTPS REST API (Port 443 - zero block issues on cloud)
- * @param {Object} params
- * @param {string} params.email - Recipient email address
- * @param {string} [params.subject] - Email subject line
- * @param {string} [params.message] - HTML content of the message
- * @param {string} [params.text] - Optional plain text alternative
- * @param {string|number} [params.otp] - Optional OTP code for fallback logging
- */
 const sendEmail = async ({ email, subject, message, text, otp }) => {
   if (!email) {
     console.error("❌ sendEmail aborted: Recipient email is missing.");
@@ -35,13 +27,12 @@ const sendEmail = async ({ email, subject, message, text, otp }) => {
   }
 
   const client = getBrevoClient();
-
   if (!client) {
     if (otp) console.log(`👉 [FALLBACK OTP] for ${email}: ${otp}`);
     return;
   }
 
-  const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+  const sendSmtpEmail = new SendSmtpEmail();
   sendSmtpEmail.subject = subject || "ShopNest Verification Code";
   sendSmtpEmail.htmlContent =
     message ||
@@ -56,7 +47,6 @@ const sendEmail = async ({ email, subject, message, text, otp }) => {
         ? message.replace(/<[^>]*>?/gm, "")
         : "");
 
-  // Sender email registered and verified in your Brevo account
   sendSmtpEmail.sender = {
     name: "ShopNest Support",
     email:
@@ -65,7 +55,7 @@ const sendEmail = async ({ email, subject, message, text, otp }) => {
       "viditjain44gaya@gmail.com",
   };
 
-  sendSmtpEmail.to = [{ email: email }];
+  sendSmtpEmail.to = [{ email }];
 
   try {
     const data = await client.sendTransacEmail(sendSmtpEmail);
