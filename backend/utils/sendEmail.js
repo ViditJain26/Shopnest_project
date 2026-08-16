@@ -1,22 +1,26 @@
-const { Resend } = require("resend");
+const SibApiV3Sdk = require("@getbrevo/brevo");
 
-let resendClient = null;
+let apiInstance = null;
 
-const getResendClient = () => {
-  const apiKey = process.env.RESEND_API_KEY;
+const getBrevoClient = () => {
+  const apiKey = process.env.BREVO_API_KEY;
   if (!apiKey) {
-    console.error("❌ RESEND_API_KEY is missing in environment variables.");
+    console.error("❌ BREVO_API_KEY is missing in environment variables.");
     return null;
   }
 
-  if (!resendClient) {
-    resendClient = new Resend(apiKey);
+  if (!apiInstance) {
+    apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+    apiInstance.setApiKey(
+      SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
+      apiKey,
+    );
   }
-  return resendClient;
+  return apiInstance;
 };
 
 /**
- * Sends transactional email via Resend HTTPS API (Port 443 - zero block issues on cloud)
+ * Sends transactional email via Brevo HTTPS REST API (Port 443 - zero block issues on cloud)
  * @param {Object} params
  * @param {string} params.email - Recipient email address
  * @param {string} [params.subject] - Email subject line
@@ -30,32 +34,50 @@ const sendEmail = async ({ email, subject, message, text, otp }) => {
     return;
   }
 
-  const resend = getResendClient();
+  const client = getBrevoClient();
 
-  if (!resend) {
+  if (!client) {
     if (otp) console.log(`👉 [FALLBACK OTP] for ${email}: ${otp}`);
     return;
   }
 
+  const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+  sendSmtpEmail.subject = subject || "ShopNest Verification Code";
+  sendSmtpEmail.htmlContent =
+    message ||
+    (otp
+      ? `<h2>Your ShopNest OTP is: <b>${otp}</b></h2>`
+      : "<p>Verification code enclosed.</p>");
+  sendSmtpEmail.textContent =
+    text ||
+    (otp
+      ? `Your ShopNest OTP is: ${otp}`
+      : message
+        ? message.replace(/<[^>]*>?/gm, "")
+        : "");
+
+  // Sender email registered and verified in your Brevo account
+  sendSmtpEmail.sender = {
+    name: "ShopNest Support",
+    email:
+      process.env.BREVO_SENDER_EMAIL ||
+      process.env.EMAIL_USER ||
+      "viditjain44gaya@gmail.com",
+  };
+
+  sendSmtpEmail.to = [{ email: email }];
+
   try {
-    const { data, error } = await resend.emails.send({
-      from: "ShopNest Support <onboarding@resend.dev>",
-      to: email,
-      subject: subject || "ShopNest Verification Code",
-      html: message || (otp ? `<h2>Your ShopNest OTP is: <b>${otp}</b></h2>` : "<p>Verification code enclosed.</p>"),
-      text: text || (otp ? `Your ShopNest OTP is: ${otp}` : message ? message.replace(/<[^>]*>?/gm, "") : ""),
-    });
-
-    if (error) {
-      console.error(`❌ [Resend Error] Failed to send email to ${email}:`, error.message);
-      if (otp) console.log(`👉 [FALLBACK OTP] for ${email}: ${otp}`);
-      return;
-    }
-
-    console.log(`✅ Email successfully sent via Resend to ${email} (ID: ${data.id})`);
+    const data = await client.sendTransacEmail(sendSmtpEmail);
+    console.log(
+      `✅ Email successfully sent via Brevo to ${email} (MessageId: ${data.messageId})`,
+    );
     return data;
   } catch (error) {
-    console.error(`❌ [API Error] Failed to send email to ${email}:`, error.message);
+    console.error(
+      `❌ [Brevo Error] Failed to send email to ${email}:`,
+      error.message,
+    );
     if (otp) console.log(`👉 [FALLBACK OTP] for ${email}: ${otp}`);
   }
 };
