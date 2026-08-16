@@ -1,20 +1,16 @@
 <div align="center">
   <img src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="ShopNest Logo" width="80" />
   <h1>ShopNest - Full-Stack MERN E-Commerce App</h1>
-  <p>A professionally engineered, full-stack E-commerce platform built strictly using modern standard React (CRA) on the frontend and Express/MongoDB on the backend.</p>
+  <p>A professionally engineered, full-stack E-commerce platform built strictly using modern standard React on the frontend and Express/MongoDB on the backend.</p>
 
   <p>
     <a href="https://shopnest-project.vercel.app/" target="_blank">
       <img src="https://img.shields.io/badge/Live%20Demo-Visit%20ShopNest-blue?style=for-the-badge&logo=vercel" alt="Live Demo" />
     </a>
-    <a href="https://github.com/ViditJain26/Shopnest_project" target="_blank">
-      <img src="https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github" alt="GitHub Repository" />
-    </a>
   </p>
 
   <p>
-    <strong>🌐 Live Deployment:</strong> <a href="https://shopnest-project.vercel.app/">https://shopnest-project.vercel.app/</a> | 
-    <strong>📂 GitHub Repo:</strong> <a href="https://github.com/ViditJain26/Shopnest_project">https://github.com/ViditJain26/Shopnest_project</a>
+    <strong>🌐 Live Deployment:</strong> <a href="https://shopnest-project.vercel.app/" target="_blank">https://shopnest-project.vercel.app/</a>
   </p>
 </div>
 
@@ -26,7 +22,7 @@
 - **Backend:** Node.js, Express.js architecture mapped with middleware-based routing.
 - **Database:** MongoDB (via Mongoose schemas).
 - **Features:** Unified Admin Dashboard, Direct Cloudinary Content Maps, Personal User Profiles matching mapped Order Histories.
-- **Payments:** Razorpay fully implemented (utilize your test metrics or placeholder).
+- **Payments:** Razorpay integration.
 - **Cloud Storage:** Cloudinary integration for Product image uploading securely via Multer.
 
 ---
