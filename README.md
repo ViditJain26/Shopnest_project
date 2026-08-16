@@ -2,6 +2,20 @@
   <img src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="ShopNest Logo" width="80" />
   <h1>ShopNest - Full-Stack MERN E-Commerce App</h1>
   <p>A professionally engineered, full-stack E-commerce platform built strictly using modern standard React (CRA) on the frontend and Express/MongoDB on the backend.</p>
+
+  <p>
+    <a href="https://shopnest-project.vercel.app/" target="_blank">
+      <img src="https://img.shields.io/badge/Live%20Demo-Visit%20ShopNest-blue?style=for-the-badge&logo=vercel" alt="Live Demo" />
+    </a>
+    <a href="https://github.com/ViditJain26/Shopnest_project" target="_blank">
+      <img src="https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github" alt="GitHub Repository" />
+    </a>
+  </p>
+
+  <p>
+    <strong>🌐 Live Deployment:</strong> <a href="https://shopnest-project.vercel.app/">https://shopnest-project.vercel.app/</a> | 
+    <strong>📂 GitHub Repo:</strong> <a href="https://github.com/ViditJain26/Shopnest_project">https://github.com/ViditJain26/Shopnest_project</a>
+  </p>
 </div>
 
 ---
@@ -22,9 +36,11 @@
 The workspace is configured beautifully using a monorepo-friendly setup with `concurrently`, enabling you to start everything from the very root folder.
 
 ### 1️⃣ Dependencies & Environments
+
 Make sure you have MongoDB running locally, or map it to a remote database string.
 
 Inside the `backend/` folder, ensure your `.env` looks like this:
+
 ```env
 PORT=5000
 NODE_ENV=development
@@ -32,3 +48,4 @@ MONGO_URI=mongodb://127.0.0.1:27017/shopnest
 JWT_SECRET=super_secret_key
 RAZORPAY_KEY_ID=your_key_id
 RAZORPAY_KEY_SECRET=your_key_secret
+```
